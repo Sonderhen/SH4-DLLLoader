@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SH4DLLLoader", "SH4DLLLoader\SH4DLLLoader.vcxproj", "{F9DFD0D1-F06F-4DC8-B9CA-9467A324875A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F9DFD0D1-F06F-4DC8-B9CA-9467A324875A}.Debug|x86.ActiveCfg = Debug|Win32
+		{F9DFD0D1-F06F-4DC8-B9CA-9467A324875A}.Debug|x86.Build.0 = Debug|Win32
+		{F9DFD0D1-F06F-4DC8-B9CA-9467A324875A}.Release|x86.ActiveCfg = Release|Win32
+		{F9DFD0D1-F06F-4DC8-B9CA-9467A324875A}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {83870FCC-D4F2-4C78-AF14-BB1F49595FE7}
+	EndGlobalSection
+EndGlobal
