@@ -84,7 +84,7 @@ namespace
     {
         wchar_t name[128] = {};
         _snwprintf_s(name, _countof(name), _TRUNCATE, L"Local\\%ls_%lu", prefix,
-                     static_cast<unsigned long>(GetCurrentProcessId()));
+            static_cast<unsigned long>(GetCurrentProcessId()));
         return name;
     }
 
@@ -93,7 +93,7 @@ namespace
         SYSTEMTIME st = {};
         GetLocalTime(&st);
         fprintf(f, "[%02u:%02u:%02u.%03u][SH4DLLLoader] %s\n",
-                st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, text);
+            st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, text);
     }
 
     void Log(const char* fmt, ...)
@@ -119,7 +119,7 @@ namespace
         {
             SetLastError(ERROR_SUCCESS);
             g_logSession = CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, 1,
-                                              KernelName(L"SH4CustomModulesLogSession").c_str());
+                KernelName(L"SH4CustomModulesLogSession").c_str());
             if (g_logSession && GetLastError() != ERROR_ALREADY_EXISTS)
                 mode = L"w";
         }
@@ -131,8 +131,8 @@ namespace
             {
                 char first[128] = {};
                 _snprintf_s(first, sizeof(first), _TRUNCATE,
-                            "DLL log initialized | PID=%lu | first module in this SH4 session",
-                            static_cast<unsigned long>(GetCurrentProcessId()));
+                    "DLL log initialized | PID=%lu | first module in this SH4 session",
+                    static_cast<unsigned long>(GetCurrentProcessId()));
                 WriteLine(f, first);
             }
             WriteLine(f, text);
@@ -188,21 +188,8 @@ namespace
     }
 
     // ======================================================================
-    // Audio fix (the game's audio code
+    // Code patching (the game's entry point)
     // ======================================================================
-
-    struct BytePatch
-    {
-        uintptr_t address;
-        uint8_t original[4];
-        uint8_t patched[4];
-        size_t size;
-    };
-
-    const BytePatch kAudioFix[] = {
-        { 0x0040904B, { 0x90, 0x90 }, { 0x75, 0x43 }, 2 },
-        { 0x0040B59C, { 0x90, 0x90 }, { 0x75, 0x41 }, 2 },
-    };
 
     bool WriteCode(uintptr_t address, const void* data, size_t size)
     {
@@ -216,30 +203,6 @@ namespace
         return true;
     }
 
-    void ApplyAudioFix()
-    {
-        for (const auto& p : kAudioFix)
-        {
-            if (std::memcmp(reinterpret_cast<const void*>(p.address), p.original, p.size) != 0)
-            {
-                Log("AudioFix: SKIPPED - the bytes at 0x%08X are not the expected ones (nothing written)",
-                    static_cast<unsigned>(p.address));
-                return;
-            }
-        }
-
-        for (const auto& p : kAudioFix)
-        {
-            if (!WriteCode(p.address, p.patched, p.size) ||
-                std::memcmp(reinterpret_cast<const void*>(p.address), p.patched, p.size) != 0)
-            {
-                Log("AudioFix: ERROR writing 0x%08X", static_cast<unsigned>(p.address));
-                return;
-            }
-        }
-        Log("AudioFix: applied");
-    }
-
     // ======================================================================
     // Mod discovery (on disk, nothing executed)
     // ======================================================================
@@ -250,7 +213,7 @@ namespace
     {
         managed = false;
         HANDLE file = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
-                                  OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
         if (file == INVALID_HANDLE_VALUE)
             return false;
 
@@ -298,7 +261,7 @@ namespace
                                 }
                             }
                             return false;
-                        };
+                            };
 
                         managed =
                             nt->OptionalHeader.NumberOfRvaAndSizes > IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR &&
@@ -385,7 +348,7 @@ namespace
         // .NET DLLs first, then alphabetical.
         std::sort(mods.begin(), mods.end(), [](const ModFile& a, const ModFile& b) {
             return a.managed != b.managed ? a.managed : a.lower < b.lower;
-        });
+            });
         return mods;
     }
 
@@ -481,10 +444,10 @@ namespace
                 static_cast<unsigned long>(call.exceptionCode));
             wchar_t text[512] = {};
             _snwprintf_s(text, _countof(text), _TRUNCATE,
-                         L"%ls crashed while starting (exception 0x%08lX).\n\n"
-                         L"The game was closed so it does not crash later. "
-                         L"Remove or update this mod.\n\nDetails: SH4CustomModules.log",
-                         mod.name.c_str(), static_cast<unsigned long>(call.exceptionCode));
+                L"%ls crashed while starting (exception 0x%08lX).\n\n"
+                L"The game was closed so it does not crash later. "
+                L"Remove or update this mod.\n\nDetails: SH4CustomModules.log",
+                mod.name.c_str(), static_cast<unsigned long>(call.exceptionCode));
             Fatal(text);
         }
         Log("%s: loaded + Initialize() OK (%lu ms)", name.c_str(),
@@ -496,7 +459,6 @@ namespace
         Log("loader start (%s)", when);
 
         LoadOriginal();
-        ApplyAudioFix();
 
         const std::vector<ModFile> mods = FindMods();
         Log("%u mod(s) found (32-bit DLLs exporting Initialize)", static_cast<unsigned>(mods.size()));
@@ -571,8 +533,8 @@ extern "C" HRESULT WINAPI DirectInput8Create(
     HINSTANCE hinst, DWORD version, REFIID riid, LPVOID* out, LPUNKNOWN outer)
 {
     if (InterlockedCompareExchange(&g_noMods, 2, 1) == 1)
-        Log("ERROR: the game's entry point could not be patched; no mod and no audio fix were "
-            "loaded (loading them while the game runs could crash it)");
+        Log("ERROR: the game's entry point could not be patched; no mod was loaded "
+            "(loading mods while the game runs could crash it)");
 
     if (!LoadOriginal())
         return E_FAIL;
